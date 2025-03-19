@@ -2,6 +2,7 @@ import { invoices, plays } from "./constants";
 import type {
   GetPerformancesInfo,
   GetResult,
+  GetTotalAmount,
   Invoice,
   Plays,
 } from "./types.ts";
@@ -58,8 +59,11 @@ const getPerformancesInfo: GetPerformancesInfo = ({ invoice, plays }) => {
   });
 };
 
+const getTotalAmount: GetTotalAmount = (performancesInfo) => {
+  return performancesInfo.reduce((acc, pI) => acc + pI.amount, 0);
+};
+
 function statement(invoice: Invoice, plays: Plays): string {
-  let totalAmount: number = 0;
   let volumeCredits: number = 0;
 
   for (let perf of invoice.performances) {
@@ -69,14 +73,14 @@ function statement(invoice: Invoice, plays: Plays): string {
     volumeCredits += Math.max(perf.audience - 30, 0);
 
     if ("comedy" === play.type) volumeCredits += Math.floor(perf.audience / 5);
-
-    totalAmount += thisAmount;
   }
+
+  const performancesInfo = getPerformancesInfo({ invoice, plays });
 
   return getResult({
     customer: invoice.customer,
-    performancesInfo: getPerformancesInfo({ invoice, plays }),
-    totalAmount,
+    performancesInfo,
+    totalAmount: getTotalAmount(performancesInfo),
     volumeCredits,
   });
 }
