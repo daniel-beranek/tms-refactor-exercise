@@ -17,3 +17,14 @@ export type Invoice = {
   customer: Customer;
   performances: Performance[];
 };
+
+export type GetResult = (props: {
+  customer: Customer;
+  performances: {
+    playName: PlayName;
+    audience: number;
+    amount: number;
+  }[];
+  totalAmount: number;
+  volumeCredits: number;
+}) => string;

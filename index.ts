@@ -1,10 +1,31 @@
 import { invoices, plays } from "./constants";
+import type { GetResult } from "./types.ts";
 
 const format: (value: number) => string = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   minimumFractionDigits: 2,
 }).format;
+
+const getResult: GetResult = ({
+  customer,
+  performances,
+  totalAmount,
+  volumeCredits,
+}) => {
+  let result: string = `Statement for ${customer}\n`;
+
+  performances.forEach((performance) => {
+    result += ` ${performance.playName}: ${format(performance.amount / 100)} (${
+      performance.audience
+    } seats)\n`;
+  });
+
+  result += `Amount owed is ${format(totalAmount / 100)}\n`;
+  result += `You earned ${volumeCredits} credits\n`;
+
+  return result;
+};
 
 function statement(invoice: any, plays: any): string {
   let totalAmount: number = 0;
@@ -37,16 +58,15 @@ function statement(invoice: any, plays: any): string {
 
     if ("comedy" === play.type) volumeCredits += Math.floor(perf.audience / 5);
 
-    result += ` ${play.name}: ${format(thisAmount / 100)} (${
-      perf.audience
-    } seats)\n`;
     totalAmount += thisAmount;
   }
 
-  result += `Amount owed is ${format(totalAmount / 100)}\n`;
-  result += `You earned ${volumeCredits} credits\n`;
-
-  return result;
+  return getResult({
+    customer: invoice.customer,
+    performances: invoice.performances,
+    totalAmount,
+    volumeCredits,
+  });
 }
 
 console.log(statement(invoices[0], plays));
