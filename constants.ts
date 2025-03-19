@@ -1,4 +1,6 @@
-export const plays = {
+import type { Invoice, Plays } from "./types";
+
+export const plays: Plays = {
   hamlet: {
     name: "Hamlet",
     type: "tragedy",
@@ -13,7 +15,7 @@ export const plays = {
   },
 };
 
-export const invoices = [
+export const invoices: Invoice[] = [
   {
     customer: "BigCo",
     performances: [
