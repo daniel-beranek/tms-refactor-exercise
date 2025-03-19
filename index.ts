@@ -3,6 +3,7 @@ import type {
   GetPerformancesInfo,
   GetResult,
   GetTotalAmount,
+  GetVolumeCredits,
   Invoice,
   Plays,
 } from "./types.ts";
@@ -63,19 +64,21 @@ const getTotalAmount: GetTotalAmount = (performancesInfo) => {
   return performancesInfo.reduce((acc, pI) => acc + pI.amount, 0);
 };
 
+const getVolumeCredits: GetVolumeCredits = ({ invoice, plays }) => {
+  return invoice.performances.reduce((acc, p) => {
+    const play = plays[p.playID];
+
+    if (play.type === "comedy") {
+      return acc + Math.floor(p.audience / 5) + Math.max(p.audience - 30, 0);
+    }
+
+    return acc + Math.max(p.audience - 30, 0);
+  }, 0);
+};
+
 function statement(invoice: Invoice, plays: Plays): string {
-  let volumeCredits: number = 0;
-
-  for (let perf of invoice.performances) {
-    const play: any = plays[perf.playID];
-    let thisAmount: number = 0;
-
-    volumeCredits += Math.max(perf.audience - 30, 0);
-
-    if ("comedy" === play.type) volumeCredits += Math.floor(perf.audience / 5);
-  }
-
   const performancesInfo = getPerformancesInfo({ invoice, plays });
+  const volumeCredits = getVolumeCredits({ invoice, plays });
 
   return getResult({
     customer: invoice.customer,

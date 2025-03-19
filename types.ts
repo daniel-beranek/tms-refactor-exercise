@@ -36,3 +36,8 @@ export type GetPerformancesInfo = (props: {
 }) => PerformanceInfo[];
 
 export type GetTotalAmount = (performancesInfo: PerformanceInfo[]) => number;
+
+export type GetVolumeCredits = (props: {
+  invoice: Invoice;
+  plays: Plays;
+}) => number;
