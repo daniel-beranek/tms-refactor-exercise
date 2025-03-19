@@ -1,14 +1,15 @@
 import { invoices, plays } from "./constants";
 
+const format: (value: number) => string = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+}).format;
+
 function statement(invoice: any, plays: any): string {
   let totalAmount: number = 0;
   let volumeCredits: number = 0;
   let result: string = `Statement for ${invoice.customer}\n`;
-  const format: (value: number) => string = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format;
 
   for (let perf of invoice.performances) {
     const play: any = plays[perf.playID];
