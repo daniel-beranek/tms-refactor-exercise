@@ -1,5 +1,10 @@
 import { invoices, plays } from "./constants";
-import type { GetResult } from "./types.ts";
+import type {
+  GetPerformancesInfo,
+  GetResult,
+  Invoice,
+  Plays,
+} from "./types.ts";
 
 const format: (value: number) => string = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -9,15 +14,15 @@ const format: (value: number) => string = new Intl.NumberFormat("en-US", {
 
 const getResult: GetResult = ({
   customer,
-  performances,
+  performancesInfo,
   totalAmount,
   volumeCredits,
 }) => {
   let result: string = `Statement for ${customer}\n`;
 
-  performances.forEach((performance) => {
-    result += ` ${performance.playName}: ${format(performance.amount / 100)} (${
-      performance.audience
+  performancesInfo.forEach((pI) => {
+    result += ` ${pI.playName}: ${format(pI.amount / 100)} (${
+      pI.audience
     } seats)\n`;
   });
 
@@ -27,32 +32,39 @@ const getResult: GetResult = ({
   return result;
 };
 
-function statement(invoice: any, plays: any): string {
+const getPerformancesInfo: GetPerformancesInfo = ({ invoice, plays }) => {
+  return invoice.performances.map((p) => {
+    const playName = plays[p.playID].name;
+    const audience = p.audience;
+    let amount = 0;
+    switch (plays[p.playID].type) {
+      case "tragedy":
+        amount = 40000;
+        if (audience > 30) {
+          amount += 1000 * (audience - 30);
+        }
+        break;
+      case "comedy":
+        amount = 30000;
+        if (audience > 20) {
+          amount += 10000 + 500 * (audience - 20);
+        }
+        amount += 300 * audience;
+        break;
+      default:
+        throw new Error(`unknown type: ${plays[p.playID].type}`);
+    }
+    return { playName, audience, amount };
+  });
+};
+
+function statement(invoice: Invoice, plays: Plays): string {
   let totalAmount: number = 0;
   let volumeCredits: number = 0;
-  let result: string = `Statement for ${invoice.customer}\n`;
 
   for (let perf of invoice.performances) {
     const play: any = plays[perf.playID];
     let thisAmount: number = 0;
-
-    switch (play.type) {
-      case "tragedy":
-        thisAmount = 40000;
-        if (perf.audience > 30) {
-          thisAmount += 1000 * (perf.audience - 30);
-        }
-        break;
-      case "comedy":
-        thisAmount = 30000;
-        if (perf.audience > 20) {
-          thisAmount += 10000 + 500 * (perf.audience - 20);
-        }
-        thisAmount += 300 * perf.audience;
-        break;
-      default:
-        throw new Error(`unknown type: ${play.type}`);
-    }
 
     volumeCredits += Math.max(perf.audience - 30, 0);
 
@@ -63,7 +75,7 @@ function statement(invoice: any, plays: any): string {
 
   return getResult({
     customer: invoice.customer,
-    performances: invoice.performances,
+    performancesInfo: getPerformancesInfo({ invoice, plays }),
     totalAmount,
     volumeCredits,
   });

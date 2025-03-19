@@ -18,13 +18,19 @@ export type Invoice = {
   performances: Performance[];
 };
 
+type PerformanceInfo = {
+  playName: PlayName;
+  audience: number;
+  amount: number;
+};
 export type GetResult = (props: {
   customer: Customer;
-  performances: {
-    playName: PlayName;
-    audience: number;
-    amount: number;
-  }[];
+  performancesInfo: PerformanceInfo[];
   totalAmount: number;
   volumeCredits: number;
 }) => string;
+
+export type GetPerformancesInfo = (props: {
+  invoice: Invoice;
+  plays: Plays;
+}) => PerformanceInfo[];
